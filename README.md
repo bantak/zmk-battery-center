@@ -92,11 +92,17 @@ You can manually move the window to the correct position to address this issue.
      ```sh
      bun install
      ```
-2. Run in development mode
+2. Add required font file
+     ```sh
+     # Download Roboto Bold font
+     curl -L -o src-tauri/assets/font-bold.ttf https://github.com/googlefonts/roboto/raw/main/src/hinted/Roboto-Bold.ttf
+     ```
+     **Note**: The font file is excluded from the repository due to licensing. You must download it manually before building.
+3. Run in development mode
      ```sh
      bun tauri dev
      ```
-3. Build for production
+4. Build for production
      ```sh
      bun tauri build
      ```
