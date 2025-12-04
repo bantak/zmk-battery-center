@@ -2,6 +2,7 @@ use tauri::{
     tray::{MouseButton, MouseButtonState, TrayIconEvent},
     AppHandle, Emitter,
 };
+use crate::icon_generator::generate_battery_icon;
 
 pub fn init_tray(app_handle: AppHandle) {
     let tray = app_handle.tray_by_id("tray_icon").unwrap();
@@ -46,4 +47,30 @@ pub fn init_tray(app_handle: AppHandle) {
             _ => {}
         }
     });
+}
+
+#[tauri::command]
+pub fn update_tray_icon(app_handle: AppHandle, percentage: u8) -> Result<(), String> {
+    log::info!("Updating tray icon with battery percentage: {}%", percentage);
+
+    let png_bytes = generate_battery_icon(percentage)
+        .map_err(|e| format!("Failed to generate icon: {}", e))?;
+
+    let image = tauri::image::Image::from_bytes(&png_bytes)
+        .map_err(|e| format!("Failed to create image from bytes: {}", e))?;
+
+    let tray = app_handle.tray_by_id("tray_icon")
+        .ok_or_else(|| "Tray icon not found".to_string())?;
+
+    tray.set_icon(Some(image))
+        .map_err(|e| format!("Failed to set tray icon: {}", e))?;
+
+    #[cfg(target_os = "macos")]
+    {
+        // Use template mode when battery is above 50%, color mode otherwise
+        let use_template = percentage > 50;
+        let _ = tray.set_icon_as_template(use_template);
+    }
+
+    Ok(())
 }
