@@ -18,6 +18,7 @@ import { platform } from "@tauri-apps/plugin-os";
 import { useWindowEvents } from "@/hooks/useWindowEvents";
 import { useTrayEvents } from "@/hooks/useTrayEvents";
 import { emit } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
 
 export type RegisteredDevice = {
 	id: string;
@@ -83,7 +84,7 @@ function App() {
 	// Load saved devices
 	useEffect(() => {
 		const fetchRegisteredDevices = async () => {
-			const deviceStore = await load('devices.json', { autoSave: true });
+			const deviceStore = await load('devices.json', { autoSave: true, defaults: {} });
 			const devices = await deviceStore.get<RegisteredDevice[]>("devices");
 			setRegisteredDevices(devices || []);
 			logger.info(`Loaded saved registered devices: ${JSON.stringify(devices, null, 4)}`);
@@ -235,11 +236,33 @@ function App() {
 		});
 	}, [registeredDevices, state, config.manualWindowPositioning, isConfigLoaded]);
 
+	// Update tray icon with minimum battery level
+	useEffect(() => {
+		if (registeredDevices.length === 0) return;
+
+		const connectedDevices = registeredDevices.filter(d => !d.isDisconnected);
+
+		if (connectedDevices.length === 0) return;
+
+		const batteryLevels = connectedDevices
+			.flatMap(d => d.batteryInfos)
+			.map(info => info.battery_level)
+			.filter(level => level !== null) as number[];
+
+		if (batteryLevels.length === 0) return;
+
+		const minBattery = Math.min(...batteryLevels);
+
+		invoke('update_tray_icon', { percentage: minBattery }).catch(err => {
+			logger.error(`Failed to update tray icon: ${err}`);
+		});
+	}, [registeredDevices]);
+
 	useEffect(() => {
 		// Save registered devices
 		if(isDeviceLoaded){
 			const saveRegisteredDevices = async () => {
-				const deviceStore = await load('devices.json', { autoSave: true });
+				const deviceStore = await load('devices.json', { autoSave: true, defaults: {} });
 				await deviceStore.set("devices", registeredDevices);
 				logger.info('Saved registered devices');
 			};
