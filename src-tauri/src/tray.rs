@@ -62,6 +62,9 @@ pub fn update_tray_icon(app_handle: AppHandle, percentage: u8) -> Result<(), Str
     let tray = app_handle.tray_by_id("tray_icon")
         .ok_or_else(|| "Tray icon not found".to_string())?;
 
+    // Clear the icon first to force refresh
+    let _ = tray.set_icon(None);
+
     tray.set_icon(Some(image))
         .map_err(|e| format!("Failed to set tray icon: {}", e))?;
 
