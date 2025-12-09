@@ -244,8 +244,9 @@ function App() {
 
 		if (connectedDevices.length === 0) return;
 
-		const batteryLevels = connectedDevices
-			.flatMap(d => d.batteryInfos)
+		// Get battery levels from the first (top) device only
+		const topDevice = connectedDevices[0];
+		const batteryLevels = topDevice.batteryInfos
 			.map(info => info.battery_level)
 			.filter(level => level !== null) as number[];
 
