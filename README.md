@@ -6,6 +6,13 @@ A system tray app to monitor the battery level of ZMK-based keyboards, built wit
 
 ## ✨ Features
 
+- **Dynamic tray icon with battery percentage**
+  - Displays the minimum battery level from the first keyboard's sides (central/peripheral)
+  - Visual indicators:
+    - Above 50%: System-adaptive template mode (follows system theme)
+    - 21-50%: Orange background (warning level)
+    - Below 20%: Red background (critical level)
+  - Updates every 30 seconds automatically
 - Display battery level for:
   - Both central and peripheral sides of split keyboards
   - Multiple keyboards simultaneously
