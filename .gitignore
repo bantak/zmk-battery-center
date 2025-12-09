@@ -22,7 +22,3 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Font files (excluded for licensing - must be added manually)
-src-tauri/assets/font-bold.ttf
-src-tauri/assets/font-black.ttf

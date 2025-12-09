@@ -1,18 +1,52 @@
 use ab_glyph::{FontRef, PxScale, Font, ScaleFont};
 use image::{ImageBuffer, Rgba, RgbaImage};
 use imageproc::drawing::draw_text_mut;
+use std::fs;
 
 const ICON_SIZE: u32 = 44;
 const FONT_SIZE: f32 = 36.0;
 const FONT_SIZE_100: f32 = 30.0; // Smaller font for 100%
 
+fn load_system_font() -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    // Try to load system font based on platform
+    #[cfg(target_os = "macos")]
+    let font_paths = vec![
+        "/System/Library/Fonts/Supplemental/Arial.ttf",
+        "/System/Library/Fonts/Supplemental/Futura.ttc",
+        "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+    ];
+
+    #[cfg(target_os = "windows")]
+    let font_paths = vec![
+        "C:\\Windows\\Fonts\\arial.ttf",    // Arial Regular
+        "C:\\Windows\\Fonts\\arialbd.ttf",  // Arial Bold
+        "C:\\Windows\\Fonts\\segoeui.ttf",  // Segoe UI Regular
+        "C:\\Windows\\Fonts\\segoeuib.ttf", // Segoe UI Bold
+    ];
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    let font_paths = vec![
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    ];
+
+    for path in font_paths {
+        if let Ok(data) = fs::read(path) {
+            log::info!("Loaded system font from: {}", path);
+            return Ok(data);
+        }
+    }
+
+    Err("No suitable system font found".into())
+}
+
 pub fn generate_battery_icon(percentage: u8) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     // Determine if we should use template mode or color mode
     let use_template = percentage > 50;
 
-    // Load embedded bold font
-    let font_data = include_bytes!("../assets/font-bold.ttf");
-    let font = FontRef::try_from_slice(font_data)?;
+    // Load system font
+    let font_data = load_system_font()?;
+    let font = FontRef::try_from_slice(&font_data)?;
 
     // Prepare text
     let text = format!("{}", percentage);
