@@ -64,8 +64,8 @@ pub fn generate_battery_icon(percentage: u8) -> Result<Vec<u8>, Box<dyn std::err
 
     let img: RgbaImage = if use_template {
         // Template mode: Create cutout effect (transparent text on solid background)
-        // Start with solid black background
-        let mut img: RgbaImage = ImageBuffer::from_pixel(ICON_SIZE, ICON_SIZE, Rgba([0u8, 0, 0, 255]));
+        // Start with solid white background for better visibility on Windows
+        let mut img: RgbaImage = ImageBuffer::from_pixel(ICON_SIZE, ICON_SIZE, Rgba([255u8, 255, 255, 255]));
 
         // Create a temporary image with white text on transparent background
         let mut text_img: RgbaImage = ImageBuffer::from_pixel(ICON_SIZE, ICON_SIZE, Rgba([0u8, 0, 0, 0]));
